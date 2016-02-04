@@ -2696,13 +2696,13 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 		if (!statement->len){
 			if(!st_in_file){
 				if (detected_server == SERVER_TYPE_MYSQL) {
-					g_string_printf(statement,"/*!40101 SET NAMES binary*/;\n");
-					g_string_append(statement,"/*!40014 SET FOREIGN_KEY_CHECKS=0*/;\n");
+					//g_string_printf(statement,"/*!40101 SET NAMES binary*/;\n");
+					//g_string_append(statement,"/*!40014 SET FOREIGN_KEY_CHECKS=0*/;\n");
 					if (!skip_tz) {
-					  g_string_append(statement,"/*!40103 SET TIME_ZONE='+00:00' */;\n");
+					  //g_string_append(statement,"/*!40103 SET TIME_ZONE='+00:00' */;\n");
 					}
 				} else {
-					g_string_printf(statement,"SET FOREIGN_KEY_CHECKS=0;\n");
+					//g_string_printf(statement,"SET FOREIGN_KEY_CHECKS=0;\n");
 				}
 
 				if (!write_data(file,statement)) {
@@ -2710,7 +2710,7 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 					return num_rows;
 				}
 			}
-			g_string_printf(statement, "INSERT INTO `%s` VALUES", table);
+			//g_string_printf(statement, "INSERT INTO `%s` VALUES", table);
 			num_rows_st = 0;
 		}
 		
@@ -2720,26 +2720,27 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 			num_rows_st++;
 		}
 		
-		g_string_append(statement_row, "\n(");
+		// g_string_append(statement_row, "\n("); // START OF LINE (RECORD) 
+		// g_string_append_c(statement_row, 2); // RECORD SEPERATOR HERE , NO NEED FOR BEGINNING OF FILE 
 
 		for (i = 0; i < num_fields; i++) {
 			/* Don't escape safe formats, saves some time */
 			if (!row[i]) {
-				g_string_append(statement_row, "NULL");
+				g_string_append_c(statement_row, 1); // NULL VALUE HANDLING
 			} else if (fields[i].flags & NUM_FLAG) {
 				g_string_append(statement_row, row[i]);
 			} else {
 				/* We reuse buffers for string escaping, growing is expensive just at the beginning */
 				g_string_set_size(escaped, lengths[i]*2+1);
 				mysql_real_escape_string(conn, escaped->str, row[i], lengths[i]);
-				g_string_append_c(statement_row,'\"');
+				//g_string_append_c(statement_row,'\"'); // STRING ENCAPSULATE CHARACTERS
 				g_string_append(statement_row,escaped->str);
-				g_string_append_c(statement_row,'\"');
+				//g_string_append_c(statement_row,'\"'); // STRING ENCAPSULATE CHARACTERS
 			}
 			if (i < num_fields - 1) {
-				g_string_append_c(statement_row,',');
+				g_string_append_c(statement_row, 26); // COLUMN SEPERATOR
 			} else {
-				g_string_append_c(statement_row,')');
+				g_string_append_c(statement_row, 2); // END OF LINE (RECORD SEPERATOR HERE) 
 				/* INSERT statement is closed before over limit */
 				if(statement->len+statement_row->len+1 > statement_size) {
 					if(num_rows_st == 0){
@@ -2747,7 +2748,7 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 						g_string_set_size(statement_row,0);
 						g_warning("Row bigger than statement_size for %s.%s", database, table);
 					}
-					g_string_append(statement,";\n");
+					// g_string_append_c(statement,2); // END OF LINE (RECORD SEPERATOR HERE) 
 
 					if (!write_data(file,statement)) {
 						g_critical("Could not write out data for %s.%s", database, table);
@@ -2769,8 +2770,8 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 					}
 					g_string_set_size(statement,0);
 				} else {
-					if(num_rows_st)
-						g_string_append_c(statement,',');
+					//if(num_rows_st)
+					//	g_string_append_c(statement,26); // COLUMN SEPERATOR
 					g_string_append(statement, statement_row->str);
 					num_rows_st++;
 					g_string_set_size(statement_row,0);
@@ -2790,13 +2791,13 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 			g_string_append(statement, statement_row->str);
 		}
 		else {
-			g_string_printf(statement, "INSERT INTO `%s` VALUES", table);
+			// g_string_printf(statement, "INSERT INTO `%s` VALUES", table);
 			g_string_append(statement, statement_row->str);
 		}
 	}
 
 	if (statement->len > 0) {
-		g_string_append(statement,";\n");
+		// g_string_append(statement,";\n");
 		if (!write_data(file,statement)) {
 			g_critical("Could not write out closing newline for %s.%s, now this is sad!", database, table);
 			goto cleanup;
