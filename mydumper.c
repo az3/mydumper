@@ -2688,13 +2688,13 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 
 	g_string_set_size(statement,0);
 
-    // WRITE_HEADER
-    //for (i = 0; i < num_fields; i++) {
-    //    if (i > 0) g_string_append_c(statement_row, 26);
-    //    g_string_append(statement_row, fields[i].name);
-    //}
-    //g_string_append_c(statement_row, 2);
-    
+	// WRITE_HEADER
+	for (i = 0; i < num_fields; i++) {
+		if (i > 0) g_string_append_c(statement_row, 26);
+		g_string_append(statement_row, fields[i].name);
+	}
+	g_string_append_c(statement_row, 2);
+	
 	/* Poor man's data dump code */
 	while ((row = mysql_fetch_row(result))) {
 		gulong *lengths = mysql_fetch_lengths(result);
