@@ -2695,6 +2695,8 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 		}
 		if (fields[i].flags & PRI_KEY_FLAG) {
 			g_string_append(statement_row, "PRI_");
+		} else {
+			g_string_append(statement_row, "_");
 		}
 		g_string_append(statement_row, fields[i].name);
 	}
