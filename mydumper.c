@@ -2693,15 +2693,10 @@ guint64 dump_table_data(MYSQL * conn, FILE *file, char *database, char *table, c
 		if (i > 0) {
 			g_string_append_c(statement_row, 26);
 		}
-		char* header_concat;
 		if (fields[i].flags & PRI_KEY_FLAG) {
-			header_concat = malloc(4+strlen(fields[i].name)+1); // +4 for "PRI_", +1 for zero terminator
-			strcpy(header_concat, "PRI_");
-			strcat(header_concat, fields[i].name);
-		} else {
-			header_concat = fields[i].name;
+			g_string_append(statement_row, "PRI_");
 		}
-		g_string_append(statement_row, header_concat);
+		g_string_append(statement_row, fields[i].name);
 	}
 	g_string_append_c(statement_row, 2);
 	
